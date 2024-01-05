@@ -1,0 +1,19 @@
+{
+  "name": "cmm",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "build:dev": "tsc --watch",
+    "start": "node build/main.js",
+    "dist": "tsc -p tsconfig.dist.json"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "typescript": "^5.3.3"
+  }
+}
