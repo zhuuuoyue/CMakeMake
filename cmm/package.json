@@ -6,14 +6,20 @@
   "scripts": {
     "build": "tsc",
     "build:dev": "tsc --watch",
-    "start": "node build/main.js",
+    "start": "npm run build && node build/main.js",
     "dist": "tsc -p tsconfig.dist.json"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/command-line-args": "^5.2.3",
+    "@types/lodash": "^4.14.202",
     "@types/node": "^20.10.6",
     "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "command-line-args": "^5.2.1",
+    "lodash": "^4.17.21"
   }
 }
