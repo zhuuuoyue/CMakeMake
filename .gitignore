@@ -132,3 +132,6 @@ dist
 cmm/.vscode
 cmm/build
 cmm/dist
+examples/**/bin
+examples/**/sln
+examples/**/CMakeLists.txt

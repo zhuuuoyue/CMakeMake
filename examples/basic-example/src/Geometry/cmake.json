@@ -1,0 +1,10 @@
+{
+  "name": "Geometry",
+  "type": "dynamic-link-library",
+  "definitions": ["GEOMETRY_LIBRARY"],
+  "include_current_directory": true,
+  "cxx_standard": 20,
+  "include_directories": [],
+  "link_directories": [],
+  "link_libraries": []
+}
