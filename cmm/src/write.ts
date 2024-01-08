@@ -241,5 +241,11 @@ export class SolutionWriter extends CMakeWriter {
                 `set_property(TARGET Moon PROPERTY VS_DEBUGGER_WORKING_DIRECTORY \${CMAKE_SOURCE_DIR}/${debug_directory}/\${CMAKE_CFG_INTDIR})`
             );
         }
+        for (let project_name in project_configs) {
+            let project_config = project_configs[project_name];
+            for (let i = 0; i < project_config.internal_libraries.length; ++i) {
+                lines.push(`add_dependencies(${project_name} ${project_config.internal_libraries[i]})`);
+            }
+        }
     }
 }
