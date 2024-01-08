@@ -13,7 +13,7 @@ export class CMakeWriter {
     public write(
         context: Context,
         solution_config: SolutionConfig,
-        projects: { [key: string]: ProjectConfig }
+        project_configs: { [key: string]: ProjectConfig }
     ): boolean {
         let project_path = this.get_project_path();
         if (_.isUndefined(project_path)) {
@@ -26,7 +26,7 @@ export class CMakeWriter {
 
         let lines: string[] = [];
         lines.push(`cmake_minimum_required(VERSION ${context.cmake_minimum_required})`);
-        this.update_cmake_lines(lines);
+        this.update_cmake_lines(context, solution_config, project_configs, lines);
 
         this.write_cmake_file(lines, cmake_path);
         return true;
@@ -36,7 +36,12 @@ export class CMakeWriter {
         return;
     }
 
-    public update_cmake_lines(lines: string[]) {
+    public update_cmake_lines(
+        context: Context,
+        solution_config: SolutionConfig,
+        projects: { [key: string]: ProjectConfig },
+        lines: string[]
+    ) {
         return;
     }
 
@@ -63,7 +68,12 @@ export class ProjectWriter extends CMakeWriter {
         return this.data.project_path;
     }
 
-    public update_cmake_lines(lines: string[]) {
+    public update_cmake_lines(
+        context: Context,
+        solution_config: SolutionConfig,
+        project_configs: { [key: string]: ProjectConfig },
+        lines: string[]
+    ) {
         lines.push(`project(${this.data.name} LANGUAGES CXX)`);
         if (this.data.include_current_dir) {
             lines.push(`set(CMAKE_INCLUDE_CURRENT_DIR ON)`);
@@ -88,6 +98,30 @@ export class ProjectWriter extends CMakeWriter {
         lines.push(`set(CMAKE_CXX_STANDARD ${this.cxx_standard_to_string(this.data.cxx_standard)})`);
         if (this.data.cxx_standard_required) {
             lines.push(`set(CMAKE_CXX_STANDARD_REQUIRED ON)`);
+        }
+
+        for (let i = 0; i < this.data.internal_libraries.length; ++i) {
+            let internal_library_name = this.data.internal_libraries[i];
+            if (_.has(project_configs, internal_library_name)) {
+                let internal_library = project_configs[internal_library_name];
+                if (
+                    internal_library.type == ProjectType.STATIC_LIBRARY ||
+                    internal_library.type == ProjectType.DYNAMIC_LINK_LIBRARY
+                ) {
+                    let include_directory_str = this.path_to_string(internal_library.project_path);
+                    lines.push(`include_directories(${include_directory_str})`);
+                    lines.push(`link_libraries("${internal_library.target_filename}")`);
+                }
+            }
+        }
+
+        if (this.data.internal_libraries.length > 0) {
+            let output_directory = join(
+                solution_config.solution_path.toLocaleString(),
+                solution_config.output_directory.toLocaleString()
+            );
+            let output_directory_str = this.path_to_string(output_directory);
+            lines.push(`link_directories(${output_directory_str})`);
         }
 
         if (!_.isUndefined(qt_config)) {
@@ -119,7 +153,7 @@ export class ProjectWriter extends CMakeWriter {
         if (!_.isUndefined(qt_config)) {
             for (let i = 0; i < qt_config.packages.length; ++i) {
                 let qt_package = qt_config.packages[i];
-                lines.push(`target_link_libraries(Moon PRIVATE Qt\${QT_VERSION_MAJOR}::${qt_config})`);
+                lines.push(`target_link_libraries(${this.data.name} PRIVATE Qt\${QT_VERSION_MAJOR}::${qt_config})`);
             }
         }
     }
@@ -139,7 +173,8 @@ export class ProjectWriter extends CMakeWriter {
 
     private path_to_string(file_path: PathLike): string {
         let file_path_str = file_path.toLocaleString();
-        return file_path_str.replace('\\', '/');
+        let value = new RegExp('\\\\', 'g');
+        return file_path_str.replace(value, '/');
     }
 
     private set_project_sources(variable_name: string, lines: string[]) {
@@ -183,7 +218,12 @@ export class SolutionWriter extends CMakeWriter {
         return this.data.solution_path;
     }
 
-    public update_cmake_lines(lines: string[]) {
+    public update_cmake_lines(
+        context: Context,
+        solution_config: SolutionConfig,
+        project_configs: { [key: string]: ProjectConfig },
+        lines: string[]
+    ) {
         lines.push(`project(${this.data.name} VERSION ${this.data.version} LANGUAGES CXX)`);
         lines.push(`set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY \${CMAKE_SOURCE_DIR}/${this.data.output_directory})`);
         lines.push(`set(CMAKE_LIBRARY_OUTPUT_DIRECTORY \${CMAKE_SOURCE_DIR}/${this.data.output_directory})`);

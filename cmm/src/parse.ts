@@ -41,6 +41,9 @@ class ProjectParser {
     public link_directories_key: string;
     public link_libraries_key: string;
 
+    public internal_includes_key: string;
+    public internal_libraries_key: string;
+
     public extensions_of_cxx: Set<string>;
     public extensions_of_qt: Set<string>;
 
@@ -58,6 +61,9 @@ class ProjectParser {
         this.include_directories_key = 'include_directory';
         this.link_directories_key = 'link_directories';
         this.link_libraries_key = 'link_directories';
+
+        this.internal_includes_key = 'internal_includes';
+        this.internal_libraries_key = 'internal_libraries';
 
         this.extensions_of_cxx = new Set<string>();
         this.extensions_of_cxx.add('.h');
@@ -116,6 +122,12 @@ class ProjectParser {
             return;
         }
         if (!this.parse_link_libraries(data, project_config)) {
+            return;
+        }
+        if (!this.parse_internal_includes(data, project_config)) {
+            return;
+        }
+        if (!this.parse_internal_libraries(data, project_config)) {
             return;
         }
         return project_config;
@@ -253,6 +265,26 @@ class ProjectParser {
         if (_.has(data, this.link_libraries_key)) {
             if (is_array_of_string(data[this.link_libraries_key])) {
                 project_config.link_libraries = data[this.link_libraries_key];
+            }
+        }
+        return true;
+    }
+
+    private parse_internal_includes(data: any, project_config: ProjectConfig): boolean {
+        if (_.has(data, this.internal_includes_key)) {
+            let value = data[this.internal_includes_key];
+            if (is_array_of_string(value)) {
+                project_config.internal_includes = value;
+            }
+        }
+        return true;
+    }
+
+    private parse_internal_libraries(data: any, project_config: ProjectConfig): boolean {
+        if (_.has(data, this.internal_libraries_key)) {
+            let value = data[this.internal_libraries_key];
+            if (is_array_of_string(value)) {
+                project_config.internal_libraries = value;
             }
         }
         return true;

@@ -45,6 +45,9 @@ export class ProjectConfig {
     public link_directories: string[];
     public link_libraries: string[];
 
+    public internal_includes: string[];
+    public internal_libraries: string[];
+
     public qt_config?: QtProjectConfig;
 
     constructor() {
@@ -60,6 +63,9 @@ export class ProjectConfig {
         this.include_directories = [];
         this.link_directories = [];
         this.link_libraries = [];
+
+        this.internal_includes = [];
+        this.internal_libraries = [];
     }
 }
 
