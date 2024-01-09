@@ -153,7 +153,7 @@ export class ProjectWriter extends CMakeWriter {
         if (!_.isUndefined(qt_config)) {
             for (let i = 0; i < qt_config.packages.length; ++i) {
                 let qt_package = qt_config.packages[i];
-                lines.push(`target_link_libraries(${this.data.name} PRIVATE Qt\${QT_VERSION_MAJOR}::${qt_config})`);
+                lines.push(`target_link_libraries(${this.data.name} PRIVATE Qt\${QT_VERSION_MAJOR}::${qt_package})`);
             }
         }
     }

@@ -40,8 +40,8 @@ function search_projects(solution_dir: string) {
 }
 
 export interface SolutionFileSytem {
-    solution_cmake_path: PathLike,
-    project_cmake_paths: PathLike[]
+    solution_cmake_path: PathLike;
+    project_cmake_paths: PathLike[];
 }
 
 export function search_solution_and_projects(source_dir: string): SolutionFileSytem | undefined {
@@ -57,6 +57,6 @@ export function search_solution_and_projects(source_dir: string): SolutionFileSy
     let project_cmake_paths = search_projects(source_dir);
     return {
         solution_cmake_path: solution_cmake,
-        project_cmake_paths: project_cmake_paths
-    }
+        project_cmake_paths: project_cmake_paths,
+    };
 }

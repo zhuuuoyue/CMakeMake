@@ -16,6 +16,7 @@ import {
     cxx_14,
     cxx_17,
     cxx_20,
+    QtProjectConfig,
 } from './concepts';
 
 function is_array_of_string(data: any): boolean {
@@ -31,18 +32,25 @@ function is_array_of_string(data: any): boolean {
 }
 
 class ProjectParser {
-    public name_key: string;
-    public type_key: string;
-    public target_filename_key: string;
-    public definitions_key: string;
-    public include_current_directory_key: string;
-    public cxx_standard_key: string;
-    public include_directories_key: string;
-    public link_directories_key: string;
-    public link_libraries_key: string;
+    public name_key: string = 'name';
+    public type_key: string = 'type';
+    public target_filename_key: string = 'target_filename';
+    public definitions_key: string = 'definitions';
+    public include_current_directory_key: string = 'include_current_directory';
+    public cxx_standard_key: string = 'cxx_standard';
+    public include_directories_key: string = 'include_directory';
+    public link_directories_key: string = 'link_directories';
+    public link_libraries_key: string = 'link_directories';
 
-    public internal_includes_key: string;
-    public internal_libraries_key: string;
+    public internal_includes_key: string = 'internal_includes';
+    public internal_libraries_key: string = 'internal_libraries';
+
+    public qt_key: string = 'qt';
+    public qt_auto_uic_key: string = 'auto_uic';
+    public qt_auto_moc_key: string = 'auto_moc';
+    public qt_auto_rcc_key: string = 'auto_rcc';
+    public qt_packages_key: string = 'packages';
+    public qt_console_key: string = 'console';
 
     public extensions_of_cxx: Set<string>;
     public extensions_of_qt: Set<string>;
@@ -52,19 +60,6 @@ class ProjectParser {
     private project_name: string;
 
     constructor(cmake_path: PathLike) {
-        this.name_key = 'name';
-        this.type_key = 'type';
-        this.target_filename_key = 'target_filename';
-        this.definitions_key = 'definitions';
-        this.include_current_directory_key = 'include_current_directory';
-        this.cxx_standard_key = 'cxx_standard';
-        this.include_directories_key = 'include_directory';
-        this.link_directories_key = 'link_directories';
-        this.link_libraries_key = 'link_directories';
-
-        this.internal_includes_key = 'internal_includes';
-        this.internal_libraries_key = 'internal_libraries';
-
         this.extensions_of_cxx = new Set<string>();
         this.extensions_of_cxx.add('.h');
         this.extensions_of_cxx.add('.c');
@@ -128,6 +123,9 @@ class ProjectParser {
             return;
         }
         if (!this.parse_internal_libraries(data, project_config)) {
+            return;
+        }
+        if (!this.parse_qt_config(data, project_config)) {
             return;
         }
         return project_config;
@@ -285,6 +283,47 @@ class ProjectParser {
             let value = data[this.internal_libraries_key];
             if (is_array_of_string(value)) {
                 project_config.internal_libraries = value;
+            }
+        }
+        return true;
+    }
+
+    private parse_qt_config(data: any, project_config: ProjectConfig): boolean {
+        if (_.has(data, this.qt_key)) {
+            let qt_object: { [key: string]: any } = data[this.qt_key];
+            if (_.isObject(qt_object)) {
+                let qt_config = new QtProjectConfig();
+                if (_.has(qt_object, this.qt_auto_uic_key)) {
+                    let value = qt_object[this.qt_auto_uic_key];
+                    if (_.isBoolean(value)) {
+                        qt_config.auto_uic = value;
+                    }
+                }
+                if (_.has(qt_object, this.qt_auto_moc_key)) {
+                    let value = qt_object[this.qt_auto_moc_key];
+                    if (_.isBoolean(value)) {
+                        qt_config.auto_moc = value;
+                    }
+                }
+                if (_.has(qt_object, this.qt_auto_rcc_key)) {
+                    let value = qt_object[this.qt_auto_rcc_key];
+                    if (_.isBoolean(value)) {
+                        qt_config.auto_rcc = value;
+                    }
+                }
+                if (_.has(qt_object, this.qt_packages_key)) {
+                    let value = qt_object[this.qt_packages_key];
+                    if (is_array_of_string(value)) {
+                        qt_config.packages = value;
+                    }
+                }
+                if (_.has(qt_object, this.qt_console_key)) {
+                    let value = qt_object[this.qt_console_key];
+                    if (_.isBoolean(value)) {
+                        qt_config.console = value;
+                    }
+                }
+                project_config.qt_config = qt_config;
             }
         }
         return true;
