@@ -1,3 +1,6 @@
+import { cwd } from 'process';
+import { isAbsolute, join } from 'path';
+
 import _ from 'lodash';
 import { OptionDefinition, ParseOptions } from 'command-line-args';
 import commandLineArgs from 'command-line-args';
@@ -27,7 +30,12 @@ function main() {
         context.cmake_minimum_required = args[CMAKE_MINIMUM_REQUIRED];
     }
 
-    let solution = search_solution_and_projects(args[SOLUTION_DIR]);
+    let solution_dir = args[SOLUTION_DIR];
+    if (!isAbsolute(solution_dir)) {
+        let workspace = cwd();
+        solution_dir = join(workspace, solution_dir);
+    }
+    let solution = search_solution_and_projects(solution_dir);
     if (_.isUndefined(solution)) {
         return;
     }
