@@ -7,7 +7,7 @@ function cmake_config_path(dir: PathLike): PathLike {
     return join(dir.toLocaleString(), cmake_config_filename);
 }
 
-function search_projects(solution_dir: string) {
+function search_projects(solution_dir: PathLike) {
     let solution_cmake_config_path = cmake_config_path(solution_dir);
     let projects: PathLike[] = [];
     let directories: PathLike[] = [solution_dir];
@@ -44,7 +44,7 @@ export interface SolutionFileSytem {
     project_cmake_paths: PathLike[];
 }
 
-export function search_solution_and_projects(source_dir: string): SolutionFileSytem | undefined {
+export function search_solution_and_projects(source_dir: PathLike): SolutionFileSytem | undefined {
     let source_dir_state = statSync(source_dir);
     if (!source_dir_state.isDirectory()) {
         return;

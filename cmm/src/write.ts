@@ -7,6 +7,10 @@ import { CxxStandard, ProjectConfig, ProjectType, SolutionConfig } from './conce
 import { cmake_lists_filename } from './constants';
 import { Context } from './context';
 
+export function str(value: string): string {
+    return `"${value}"`;
+}
+
 export class CMakeWriter {
     constructor() {}
 
@@ -74,7 +78,7 @@ export class ProjectWriter extends CMakeWriter {
         project_configs: { [key: string]: ProjectConfig },
         lines: string[]
     ) {
-        lines.push(`project(${this.data.name} LANGUAGES CXX)`);
+        lines.push(`project(${str(this.data.name)} LANGUAGES CXX)`);
         if (this.data.include_current_dir) {
             lines.push(`set(CMAKE_INCLUDE_CURRENT_DIR ON)`);
         }
@@ -148,12 +152,12 @@ export class ProjectWriter extends CMakeWriter {
         }
         for (let i = 0; i < this.data.definitions.length; ++i) {
             let definition = this.data.definitions[i];
-            lines.push(`target_compile_definitions(${this.data.name} PRIVATE ${definition})`);
+            lines.push(`target_compile_definitions(${str(this.data.name)} PRIVATE ${definition})`);
         }
         if (!_.isUndefined(qt_config)) {
             for (let i = 0; i < qt_config.packages.length; ++i) {
                 let qt_package = qt_config.packages[i];
-                lines.push(`target_link_libraries(${this.data.name} PRIVATE Qt\${QT_VERSION_MAJOR}::${qt_package})`);
+                lines.push(`target_link_libraries(${str(this.data.name)} PRIVATE Qt\${QT_VERSION_MAJOR}::${qt_package})`);
             }
         }
     }
@@ -186,15 +190,15 @@ export class ProjectWriter extends CMakeWriter {
     }
 
     private add_static_library(project_name: string, variable_name: string): string {
-        return `add_library(${project_name} \${${variable_name}})`;
+        return `add_library(${str(project_name)} \${${variable_name}})`;
     }
 
     private add_shared_library(project_name: string, variable_name: string): string {
-        return `add_library(${project_name} SHARED \${${variable_name}})`;
+        return `add_library(${str(project_name)} SHARED \${${variable_name}})`;
     }
 
     private add_executable(project_name: string, variable_name: string): string {
-        return `add_executable(${project_name} \${${variable_name}})`;
+        return `add_executable(${str(project_name)} \${${variable_name}})`;
     }
 
     private source_group(file_path: PathLike): string {
@@ -202,7 +206,7 @@ export class ProjectWriter extends CMakeWriter {
         if (filter === '.') {
             filter = '';
         }
-        return `source_group("${this.path_to_string(filter)}" FILES ${this.path_to_string(file_path)})`;
+        return `source_group(${str(this.path_to_string(filter))} FILES ${this.path_to_string(file_path)})`;
     }
 }
 
@@ -224,27 +228,27 @@ export class SolutionWriter extends CMakeWriter {
         project_configs: { [key: string]: ProjectConfig },
         lines: string[]
     ) {
-        lines.push(`project(${this.data.name} VERSION ${this.data.version} LANGUAGES CXX)`);
+        lines.push(`project(${str(this.data.name)} VERSION ${this.data.version} LANGUAGES CXX)`);
         lines.push(`set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY \${CMAKE_SOURCE_DIR}/${this.data.output_directory})`);
         lines.push(`set(CMAKE_LIBRARY_OUTPUT_DIRECTORY \${CMAKE_SOURCE_DIR}/${this.data.output_directory})`);
         lines.push(`set(CMAKE_RUNTIME_OUTPUT_DIRECTORY \${CMAKE_SOURCE_DIR}/${this.data.output_directory})`);
         for (let project_index = 0; project_index < this.data.subdirectories.length; ++project_index) {
             let project = this.data.subdirectories[project_index];
-            lines.push(`add_subdirectory(${project})`);
+            lines.push(`add_subdirectory(${str(project)})`);
         }
         if (this.data.startup_project.length > 0) {
-            lines.push(`set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${this.data.startup_project})`);
+            lines.push(`set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${str(this.data.startup_project)})`);
         }
         let debug_directory = this.data.debugger_working_directory.toLocaleString();
         if (debug_directory.length > 0) {
             lines.push(
-                `set_property(TARGET Moon PROPERTY VS_DEBUGGER_WORKING_DIRECTORY \${CMAKE_SOURCE_DIR}/${debug_directory}/\${CMAKE_CFG_INTDIR})`
+                `set_property(TARGET ${str(this.data.startup_project)} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY \${CMAKE_SOURCE_DIR}/${debug_directory}/\${CMAKE_CFG_INTDIR})`
             );
         }
         for (let project_name in project_configs) {
             let project_config = project_configs[project_name];
             for (let i = 0; i < project_config.internal_libraries.length; ++i) {
-                lines.push(`add_dependencies(${project_name} ${project_config.internal_libraries[i]})`);
+                lines.push(`add_dependencies(${str(project_name)} ${str(project_config.internal_libraries[i])})`);
             }
         }
     }

@@ -1,7 +1,6 @@
-export class Context {
-    public cmake_minimum_required: string;
+import { PathLike } from 'fs';
 
-    constructor() {
-        this.cmake_minimum_required = '3.5';
-    }
+export class Context {
+    public cmake_minimum_required: string = '3.5';
+    public solution_directory?: PathLike;
 }

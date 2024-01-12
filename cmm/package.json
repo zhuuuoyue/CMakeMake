@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "build:dev": "tsc --watch",
-    "start": "npm run build && node build/main.js",
+    "start": "node build/main.js",
     "dist": "tsc -p tsconfig.dist.json"
   },
   "keywords": [],
