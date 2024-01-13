@@ -104,6 +104,16 @@ export class ProjectWriter extends CMakeWriter {
             lines.push(`set(CMAKE_CXX_STANDARD_REQUIRED ON)`);
         }
 
+        let include_directories = new Set<string>();
+        for (let file of this.data.files) {
+            let file_path = join(this.data.project_path.toLocaleString(), file.toLocaleString());
+            let file_directory = dirname(file_path);
+            include_directories.add(this.path_to_string(file_directory));
+        }
+        for (let include_directory of include_directories) {
+            lines.push(`include_directories(${include_directory})`);
+        }
+
         for (let i = 0; i < this.data.internal_libraries.length; ++i) {
             let internal_library_name = this.data.internal_libraries[i];
             if (_.has(project_configs, internal_library_name)) {
@@ -112,8 +122,19 @@ export class ProjectWriter extends CMakeWriter {
                     internal_library.type == ProjectType.STATIC_LIBRARY ||
                     internal_library.type == ProjectType.DYNAMIC_LINK_LIBRARY
                 ) {
-                    let include_directory_str = this.path_to_string(internal_library.project_path);
-                    lines.push(`include_directories(${include_directory_str})`);
+                    let include_directories = new Set<string>();
+                    include_directories.add(this.path_to_string(internal_library.project_path));
+                    for (let file_index = 0; file_index < internal_library.files.length; ++file_index) {
+                        let full_file_path = join(
+                            internal_library.project_path.toLocaleString(),
+                            internal_library.files[file_index].toLocaleString()
+                        );
+                        let full_file_directory = dirname(full_file_path);
+                        include_directories.add(this.path_to_string(full_file_directory));
+                    }
+                    for (let include_directory of include_directories) {
+                        lines.push(`include_directories(${include_directory})`);
+                    }
                     lines.push(`link_libraries("${internal_library.target_filename}")`);
                 }
             }
@@ -157,7 +178,9 @@ export class ProjectWriter extends CMakeWriter {
         if (!_.isUndefined(qt_config)) {
             for (let i = 0; i < qt_config.packages.length; ++i) {
                 let qt_package = qt_config.packages[i];
-                lines.push(`target_link_libraries(${str(this.data.name)} PRIVATE Qt\${QT_VERSION_MAJOR}::${qt_package})`);
+                lines.push(
+                    `target_link_libraries(${str(this.data.name)} PRIVATE Qt\${QT_VERSION_MAJOR}::${qt_package})`
+                );
             }
         }
     }
@@ -242,7 +265,9 @@ export class SolutionWriter extends CMakeWriter {
         let debug_directory = this.data.debugger_working_directory.toLocaleString();
         if (debug_directory.length > 0) {
             lines.push(
-                `set_property(TARGET ${str(this.data.startup_project)} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY \${CMAKE_SOURCE_DIR}/${debug_directory}/\${CMAKE_CFG_INTDIR})`
+                `set_property(TARGET ${str(
+                    this.data.startup_project
+                )} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY \${CMAKE_SOURCE_DIR}/${debug_directory}/\${CMAKE_CFG_INTDIR})`
             );
         }
         for (let project_name in project_configs) {
