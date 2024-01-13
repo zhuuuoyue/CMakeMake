@@ -331,18 +331,15 @@ class ProjectParser {
 }
 
 class SolutionParser {
-    public name_key: string;
-    public output_directory_key: string;
-    public startup_project_key: string;
+    public name_key: string = 'name';
+    public output_directory_key: string = 'output_directory';
+    public startup_project_key: string = 'startup_project';
+    public debugger_working_directory_key: string = 'debugger_working_directory';
 
     private cmake_path: PathLike;
     private solution_path: PathLike;
 
     constructor(cmake_path: PathLike) {
-        this.name_key = 'name';
-        this.output_directory_key = 'output_directory';
-        this.startup_project_key = 'startup_project';
-
         this.cmake_path = cmake_path;
         this.solution_path = dirname(this.cmake_path.toLocaleString());
     }
@@ -359,6 +356,9 @@ class SolutionParser {
             return;
         }
         if (!this.parse_startup_project(data, solution_config)) {
+            return;
+        }
+        if (!this.parse_debugger_working_directory(data, solution_config)) {
             return;
         }
         return solution_config;
@@ -389,6 +389,16 @@ class SolutionParser {
             let value = data[this.startup_project_key];
             if (_.isString(value) && value.length > 0) {
                 solution_config.startup_project = value;
+            }
+        }
+        return true;
+    }
+
+    private parse_debugger_working_directory(data: any, solution_config: SolutionConfig): boolean {
+        if (_.has(data, this.debugger_working_directory_key)) {
+            let value = data[this.debugger_working_directory_key];
+            if (_.isString(value)) {
+                solution_config.debugger_working_directory = value;
             }
         }
         return true;
