@@ -89,13 +89,16 @@ class ProjectParser {
 
         let project_config: ProjectConfig = new ProjectConfig();
         project_config.project_path = this.project_path;
-        if (!this.search_files(data, project_config)) {
-            return;
-        }
         if (!this.parse_name(data, project_config)) {
             return;
         }
         if (!this.parse_type(data, project_config)) {
+            return;
+        }
+        if (!this.parse_qt_config(data, project_config)) {
+            return;
+        }
+        if (!this.search_files(data, project_config)) {
             return;
         }
         if (!this.parse_target_filename(data, project_config)) {
@@ -125,14 +128,12 @@ class ProjectParser {
         if (!this.parse_internal_libraries(data, project_config)) {
             return;
         }
-        if (!this.parse_qt_config(data, project_config)) {
-            return;
-        }
         return project_config;
     }
 
     private search_files(data: any, project_config: ProjectConfig): boolean {
         let directories: PathLike[] = [this.project_path];
+        let is_qt_project = !_.isUndefined(project_config.qt_config);
         while (directories.length > 0) {
             let current_directory = directories.pop();
             if (_.isUndefined(current_directory)) {
@@ -147,8 +148,10 @@ class ProjectParser {
                 let child_state = statSync(child_path);
                 if (child_state.isFile()) {
                     let ext = extname(child_path).toLowerCase();
+                    let relative_path = relative(this.project_path.toLocaleString(), child_path);
                     if (this.extensions_of_cxx.has(ext)) {
-                        let relative_path = relative(this.project_path.toLocaleString(), child_path);
+                        project_config.files.push(relative_path);
+                    } else if (is_qt_project && this.extensions_of_qt.has(ext)) {
                         project_config.files.push(relative_path);
                     }
                 } else if (child_state.isDirectory()) {
