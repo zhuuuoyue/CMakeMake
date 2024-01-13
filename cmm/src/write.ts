@@ -104,40 +104,33 @@ export class ProjectWriter extends CMakeWriter {
             lines.push(`set(CMAKE_CXX_STANDARD_REQUIRED ON)`);
         }
 
-        let include_directories = new Set<string>();
+        // collect including paths
+        let include_directories = new Set<PathLike>();
+        let project_full_path_str = this.data.project_path.toLocaleString();
         for (let file of this.data.files) {
-            let file_path = join(this.data.project_path.toLocaleString(), file.toLocaleString());
-            let file_directory = dirname(file_path);
-            include_directories.add(this.path_to_string(file_directory));
-        }
-        for (let include_directory of include_directories) {
-            lines.push(`include_directories(${include_directory})`);
+            let file_path = join(project_full_path_str, file.toLocaleString());
+            include_directories.add(dirname(file_path));
         }
 
-        for (let i = 0; i < this.data.internal_libraries.length; ++i) {
-            let internal_library_name = this.data.internal_libraries[i];
+        for (let internal_library_name of this.data.internal_libraries) {
             if (_.has(project_configs, internal_library_name)) {
                 let internal_library = project_configs[internal_library_name];
                 if (
                     internal_library.type == ProjectType.STATIC_LIBRARY ||
                     internal_library.type == ProjectType.DYNAMIC_LINK_LIBRARY
                 ) {
-                    let include_directories = new Set<string>();
-                    include_directories.add(this.path_to_string(internal_library.project_path));
-                    for (let file_index = 0; file_index < internal_library.files.length; ++file_index) {
-                        let full_file_path = join(
-                            internal_library.project_path.toLocaleString(),
-                            internal_library.files[file_index].toLocaleString()
-                        );
-                        let full_file_directory = dirname(full_file_path);
-                        include_directories.add(this.path_to_string(full_file_directory));
-                    }
-                    for (let include_directory of include_directories) {
-                        lines.push(`include_directories(${include_directory})`);
+                    include_directories.add(internal_library.project_path);
+                    for (let file_rel_path of internal_library.files) {
+                        let file_full_path = join(project_full_path_str, file_rel_path.toLocaleString());
+                        include_directories.add(dirname(file_full_path));
                     }
                     lines.push(`link_libraries("${internal_library.target_filename}")`);
                 }
             }
+        }
+
+        for (let include_directory of include_directories) {
+            lines.push(`include_directories(${this.path_to_string(include_directory)})`);
         }
 
         if (this.data.internal_libraries.length > 0) {
@@ -150,8 +143,7 @@ export class ProjectWriter extends CMakeWriter {
         }
 
         if (!_.isUndefined(qt_config)) {
-            for (let i = 0; i < qt_config.packages.length; ++i) {
-                let qt_package = qt_config.packages[i];
+            for (let qt_package of qt_config.packages) {
                 lines.push(`find_package(QT NAMES Qt6 Qt5 COMPONENTS ${qt_package} REQUIRED)`);
                 lines.push(`find_package(Qt\${QT_VERSION_MAJOR} COMPONENTS ${qt_package} REQUIRED)`);
             }
@@ -168,16 +160,14 @@ export class ProjectWriter extends CMakeWriter {
         if (this.data.type == ProjectType.DYNAMIC_LINK_LIBRARY) {
             lines.push(this.add_shared_library(this.data.name, project_sources_variable));
         }
-        for (let i = 0; i < this.data.files.length; ++i) {
-            lines.push(this.source_group(this.data.files[i]));
+        for (let file_rel_path of this.data.files) {
+            lines.push(this.source_group(file_rel_path));
         }
-        for (let i = 0; i < this.data.definitions.length; ++i) {
-            let definition = this.data.definitions[i];
+        for (let definition of this.data.definitions) {
             lines.push(`target_compile_definitions(${str(this.data.name)} PRIVATE ${definition})`);
         }
         if (!_.isUndefined(qt_config)) {
-            for (let i = 0; i < qt_config.packages.length; ++i) {
-                let qt_package = qt_config.packages[i];
+            for (let qt_package of qt_config.packages) {
                 lines.push(
                     `target_link_libraries(${str(this.data.name)} PRIVATE Qt\${QT_VERSION_MAJOR}::${qt_package})`
                 );
@@ -206,8 +196,8 @@ export class ProjectWriter extends CMakeWriter {
 
     private set_project_sources(variable_name: string, lines: string[]) {
         lines.push(`set(${variable_name}`);
-        for (let i = 0; i < this.data.files.length; ++i) {
-            lines.push(this.path_to_string(this.data.files[i]));
+        for (let file_rel_path of this.data.files) {
+            lines.push(this.path_to_string(file_rel_path));
         }
         lines.push(`)`);
     }
@@ -255,9 +245,8 @@ export class SolutionWriter extends CMakeWriter {
         lines.push(`set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY \${CMAKE_SOURCE_DIR}/${this.data.output_directory})`);
         lines.push(`set(CMAKE_LIBRARY_OUTPUT_DIRECTORY \${CMAKE_SOURCE_DIR}/${this.data.output_directory})`);
         lines.push(`set(CMAKE_RUNTIME_OUTPUT_DIRECTORY \${CMAKE_SOURCE_DIR}/${this.data.output_directory})`);
-        for (let project_index = 0; project_index < this.data.subdirectories.length; ++project_index) {
-            let project = this.data.subdirectories[project_index];
-            lines.push(`add_subdirectory(${str(project)})`);
+        for (let subdirectory of this.data.subdirectories) {
+            lines.push(`add_subdirectory(${str(subdirectory)})`);
         }
         if (this.data.startup_project.length > 0) {
             lines.push(`set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${str(this.data.startup_project)})`);
@@ -272,8 +261,8 @@ export class SolutionWriter extends CMakeWriter {
         }
         for (let project_name in project_configs) {
             let project_config = project_configs[project_name];
-            for (let i = 0; i < project_config.internal_libraries.length; ++i) {
-                lines.push(`add_dependencies(${str(project_name)} ${str(project_config.internal_libraries[i])})`);
+            for (let internal_library of project_config.internal_libraries) {
+                lines.push(`add_dependencies(${str(project_name)} ${str(internal_library)})`);
             }
         }
     }

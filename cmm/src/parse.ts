@@ -23,8 +23,8 @@ function is_array_of_string(data: any): boolean {
     if (!_.isArray(data)) {
         return false;
     }
-    for (let index = 0; index < data.length; ++index) {
-        if (!_.isString(data[index])) {
+    for (let item of data) {
+        if (!_.isString(item)) {
             return false;
         }
     }
@@ -139,8 +139,7 @@ class ProjectParser {
                 continue;
             }
             let children = readdirSync(current_directory.toLocaleString());
-            for (let child_index = 0; child_index < children.length; ++child_index) {
-                let child = children[child_index];
+            for (let child of children) {
                 if (child === '.' || child === '..') {
                     continue;
                 }
@@ -423,8 +422,7 @@ export function parse_solution_and_projects(
     }
 
     let projects: { [key: string]: ProjectConfig } = {};
-    for (let project_index = 0; project_index < project_cmake_paths.length; ++project_index) {
-        let project_cmake_path = project_cmake_paths[project_index];
+    for (let project_cmake_path of project_cmake_paths) {
         let project_parser = new ProjectParser(project_cmake_path);
         let project_config = project_parser.parse();
         if (!_.isUndefined(project_config)) {

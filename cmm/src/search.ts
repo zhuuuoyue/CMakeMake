@@ -17,8 +17,7 @@ function search_projects(solution_dir: PathLike) {
             continue;
         }
         let children = readdirSync(current_directory);
-        for (let index = 0; index < children.length; ++index) {
-            let child = children[index];
+        for (let child of children) {
             if (child == '.' || child == '..') {
                 continue;
             }
