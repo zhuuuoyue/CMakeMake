@@ -1,5 +1,5 @@
 import { PathLike, writeFileSync } from 'fs';
-import { dirname, join } from 'path';
+import { dirname, isAbsolute, join } from 'path';
 
 import _ from 'lodash';
 
@@ -126,6 +126,15 @@ export class ProjectWriter extends CMakeWriter {
                     }
                     lines.push(`link_libraries("${internal_library.target_filename}")`);
                 }
+            }
+        }
+
+        for (let include_directory of this.data.include_directories) {
+            if (isAbsolute(include_directory)) {
+                include_directories.add(include_directory);
+            } else {
+                let include_directory_path = join(this.data.project_path.toLocaleString(), include_directory);
+                include_directories.add(include_directory_path);
             }
         }
 

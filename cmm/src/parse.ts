@@ -39,7 +39,7 @@ class ProjectParser {
     public definitions_key: string = 'definitions';
     public include_current_directory_key: string = 'include_current_directory';
     public cxx_standard_key: string = 'cxx_standard';
-    public include_directories_key: string = 'include_directory';
+    public include_directories_key: string = 'include_directories';
     public link_directories_key: string = 'link_directories';
     public link_libraries_key: string = 'link_directories';
 
