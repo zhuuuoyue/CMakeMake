@@ -18,6 +18,7 @@ import {
     cxx_20,
     QtProjectConfig,
 } from './concepts';
+import { cmake_config_filename } from './constants';
 
 function is_array_of_string(data: any): boolean {
     if (!_.isArray(data)) {
@@ -132,6 +133,7 @@ class ProjectParser {
     }
 
     private search_files(data: any, project_config: ProjectConfig): boolean {
+        project_config.files.push(cmake_config_filename);
         let directories: PathLike[] = [this.project_path];
         let is_qt_project = !_.isUndefined(project_config.qt_config);
         while (directories.length > 0) {
