@@ -1,15 +1,12 @@
-import { PathLike, writeFileSync } from 'fs';
-import { dirname, isAbsolute, join } from 'path';
+import { PathLike } from 'fs';
+import { dirname, extname, isAbsolute, join } from 'path';
 
 import _ from 'lodash';
 
 import { CxxStandard, ProjectConfig, ProjectType, SolutionConfig } from './concepts';
-import { cmake_lists_filename } from './constants';
 import { Context } from './context';
-
-export function str(value: string): string {
-    return `"${value}"`;
-}
+import { Document } from './document';
+import * as cm from './cmake';
 
 export class CMakeWriter {
     constructor() {}
@@ -23,40 +20,27 @@ export class CMakeWriter {
         if (_.isUndefined(project_path)) {
             return false;
         }
-        let cmake_path = this.cmake_file_path(project_path);
-        if (_.isUndefined(cmake_path)) {
-            return false;
-        }
 
-        let lines: string[] = [];
-        lines.push(`cmake_minimum_required(VERSION ${context.cmake_minimum_required})`);
-        this.update_cmake_lines(context, solution_config, project_configs, lines);
-
-        this.write_cmake_file(lines, cmake_path);
+        let doc = new Document();
+        doc.add(cm.cmake_minimum_required(context.cmake_minimum_required));
+        this.update_cmake_lines(context, solution_config, project_configs, doc);
+        doc.save(project_path);
         return true;
     }
 
+    // pure virtual function
     public get_project_path(): PathLike | undefined {
         return;
     }
 
+    // pure virtual function
     public update_cmake_lines(
         context: Context,
         solution_config: SolutionConfig,
         projects: { [key: string]: ProjectConfig },
-        lines: string[]
+        doc: Document
     ) {
         return;
-    }
-
-    protected write_cmake_file(lines: string[], cmake_path: PathLike): boolean {
-        let text = lines.join('\n');
-        writeFileSync(cmake_path.toLocaleString(), text, { flag: 'w' });
-        return true;
-    }
-
-    protected cmake_file_path(project_directory: PathLike): string | undefined {
-        return join(project_directory.toLocaleString(), cmake_lists_filename);
     }
 }
 
@@ -76,33 +60,21 @@ export class ProjectWriter extends CMakeWriter {
         context: Context,
         solution_config: SolutionConfig,
         project_configs: { [key: string]: ProjectConfig },
-        lines: string[]
+        doc: Document
     ) {
-        lines.push(`project(${str(this.data.name)} LANGUAGES CXX)`);
-        if (this.data.include_current_dir) {
-            lines.push(`set(CMAKE_INCLUDE_CURRENT_DIR ON)`);
-        }
+        doc.add(cm.project(this.data.name));
+        doc.add(cm.cmake_include_current_dir(this.data.include_current_dir));
         let qt_config = this.data.qt_config;
         if (!_.isUndefined(qt_config)) {
-            if (qt_config.auto_uic) {
-                lines.push(`set(CMAKE_AUTOUIC ON)`);
-            }
-            if (qt_config.auto_moc) {
-                lines.push(`set(CMAKE_AUTOMOC ON)`);
-            }
-            if (qt_config.auto_rcc) {
-                lines.push(`set(CMAKE_AUTORCC ON)`);
-            }
+            doc.add(cm.cmake_autouic(qt_config.auto_uic));
+            doc.add(cm.cmake_autouic(qt_config.auto_moc));
+            doc.add(cm.cmake_autouic(qt_config.auto_rcc));
         }
         if (this.data.type === ProjectType.DESKTOP_APPLICATION) {
-            lines.push(
-                `set(CMAKE_EXE_LINKER_FLAGS "\${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")`
-            );
+            doc.add(cm.cmake_exe_linker_flags());
         }
-        lines.push(`set(CMAKE_CXX_STANDARD ${this.cxx_standard_to_string(this.data.cxx_standard)})`);
-        if (this.data.cxx_standard_required) {
-            lines.push(`set(CMAKE_CXX_STANDARD_REQUIRED ON)`);
-        }
+        doc.add(cm.cmake_cxx_standard(this.data.cxx_standard));
+        doc.add(cm.cmake_cxx_standard_required(this.data.cxx_standard_required));
 
         // collect including paths
         let include_directories = new Set<PathLike>();
@@ -124,7 +96,10 @@ export class ProjectWriter extends CMakeWriter {
                         let file_full_path = join(project_full_path_str, file_rel_path.toLocaleString());
                         include_directories.add(dirname(file_full_path));
                     }
-                    lines.push(`link_libraries("${internal_library.target_filename}")`);
+                    let ext = extname(internal_library.target_filename);
+                    let end = internal_library.target_filename.length - ext.length;
+                    let lib_name = `${internal_library.target_filename.substring(0, end)}.lib`;
+                    doc.add(cm.link_libraries(lib_name));
                 }
             }
         }
@@ -139,7 +114,7 @@ export class ProjectWriter extends CMakeWriter {
         }
 
         for (let include_directory of include_directories) {
-            lines.push(`include_directories(${this.path_to_string(include_directory)})`);
+            doc.add(cm.include_directories(include_directory));
         }
 
         if (this.data.internal_libraries.length > 0) {
@@ -147,80 +122,37 @@ export class ProjectWriter extends CMakeWriter {
                 solution_config.solution_path.toLocaleString(),
                 solution_config.output_directory.toLocaleString()
             );
-            let output_directory_str = this.path_to_string(output_directory);
-            lines.push(`link_directories(${output_directory_str})`);
+            doc.add(cm.link_directories(output_directory));
         }
 
         if (!_.isUndefined(qt_config)) {
             for (let qt_package of qt_config.packages) {
-                lines.push(`find_package(QT NAMES Qt6 Qt5 COMPONENTS ${qt_package} REQUIRED)`);
-                lines.push(`find_package(Qt\${QT_VERSION_MAJOR} COMPONENTS ${qt_package} REQUIRED)`);
+                doc.add(cm.find_package_qt(qt_package));
             }
         }
 
         let project_sources_variable = 'PROJECT_SOURCES';
-        this.set_project_sources(project_sources_variable, lines);
+        doc.add(cm.set_variable_multi_paths(project_sources_variable, this.data.files));
         if (this.data.type == ProjectType.CONSOLE_APPLICATION || this.data.type == ProjectType.DESKTOP_APPLICATION) {
-            lines.push(this.add_executable(this.data.name, project_sources_variable));
+            doc.add(cm.add_executable(this.data.name, project_sources_variable));
         }
         if (this.data.type == ProjectType.STATIC_LIBRARY) {
-            lines.push(this.add_static_library(this.data.name, project_sources_variable));
+            doc.add(cm.add_library(this.data.name, project_sources_variable));
         }
         if (this.data.type == ProjectType.DYNAMIC_LINK_LIBRARY) {
-            lines.push(this.add_shared_library(this.data.name, project_sources_variable));
+            doc.add(cm.add_library(this.data.name, project_sources_variable, true));
         }
         for (let file_rel_path of this.data.files) {
-            lines.push(this.source_group(file_rel_path));
+            doc.add(this.source_group(file_rel_path));
         }
         for (let definition of this.data.definitions) {
-            lines.push(`target_compile_definitions(${str(this.data.name)} PRIVATE ${definition})`);
+            doc.add(cm.target_compile_definitions(this.data.name, definition));
         }
         if (!_.isUndefined(qt_config)) {
             for (let qt_package of qt_config.packages) {
-                lines.push(
-                    `target_link_libraries(${str(this.data.name)} PRIVATE Qt\${QT_VERSION_MAJOR}::${qt_package})`
-                );
+                doc.add(cm.target_link_libraries_qt(this.data.name, qt_package));
             }
         }
-    }
-
-    private cxx_standard_to_string(cxx_standard: CxxStandard): string {
-        if (CxxStandard.CXX_11 === cxx_standard) {
-            return '11';
-        } else if (CxxStandard.CXX_14 === cxx_standard) {
-            return '14';
-        } else if (CxxStandard.CXX_17 === cxx_standard) {
-            return '17';
-        } else if (CxxStandard.CXX_20 === cxx_standard) {
-            return '20';
-        }
-        return '11';
-    }
-
-    private path_to_string(file_path: PathLike): string {
-        let file_path_str = file_path.toLocaleString();
-        let value = new RegExp('\\\\', 'g');
-        return file_path_str.replace(value, '/');
-    }
-
-    private set_project_sources(variable_name: string, lines: string[]) {
-        lines.push(`set(${variable_name}`);
-        for (let file_rel_path of this.data.files) {
-            lines.push(this.path_to_string(file_rel_path));
-        }
-        lines.push(`)`);
-    }
-
-    private add_static_library(project_name: string, variable_name: string): string {
-        return `add_library(${str(project_name)} \${${variable_name}})`;
-    }
-
-    private add_shared_library(project_name: string, variable_name: string): string {
-        return `add_library(${str(project_name)} SHARED \${${variable_name}})`;
-    }
-
-    private add_executable(project_name: string, variable_name: string): string {
-        return `add_executable(${str(project_name)} \${${variable_name}})`;
     }
 
     private source_group(file_path: PathLike): string {
@@ -228,7 +160,7 @@ export class ProjectWriter extends CMakeWriter {
         if (filter === '.') {
             filter = '';
         }
-        return `source_group(${str(this.path_to_string(filter))} FILES ${this.path_to_string(file_path)})`;
+        return cm.source_group(filter, file_path);
     }
 }
 
@@ -248,30 +180,24 @@ export class SolutionWriter extends CMakeWriter {
         context: Context,
         solution_config: SolutionConfig,
         project_configs: { [key: string]: ProjectConfig },
-        lines: string[]
+        lines: Document
     ) {
-        lines.push(`project(${str(this.data.name)} VERSION ${this.data.version} LANGUAGES CXX)`);
-        lines.push(`set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY \${CMAKE_SOURCE_DIR}/${this.data.output_directory})`);
-        lines.push(`set(CMAKE_LIBRARY_OUTPUT_DIRECTORY \${CMAKE_SOURCE_DIR}/${this.data.output_directory})`);
-        lines.push(`set(CMAKE_RUNTIME_OUTPUT_DIRECTORY \${CMAKE_SOURCE_DIR}/${this.data.output_directory})`);
+        lines.add(cm.project(this.data.name, this.data.version));
+        lines.add(cm.cmake_output_directory(this.data.output_directory));
         for (let subdirectory of this.data.subdirectories) {
-            lines.push(`add_subdirectory(${str(subdirectory)})`);
+            lines.add(cm.add_subdirectory(subdirectory));
         }
         if (this.data.startup_project.length > 0) {
-            lines.push(`set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${str(this.data.startup_project)})`);
+            lines.add(cm.startup_project(this.data.startup_project));
         }
         let debug_directory = this.data.debugger_working_directory.toLocaleString();
         if (debug_directory.length > 0) {
-            lines.push(
-                `set_property(TARGET ${str(
-                    this.data.startup_project
-                )} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY \${CMAKE_SOURCE_DIR}/${debug_directory}/\${CMAKE_CFG_INTDIR})`
-            );
+            lines.add(cm.debugger_working_directory(this.data.startup_project, this.data.debugger_working_directory));
         }
         for (let project_name in project_configs) {
             let project_config = project_configs[project_name];
             for (let internal_library of project_config.internal_libraries) {
-                lines.push(`add_dependencies(${str(project_name)} ${str(internal_library)})`);
+                lines.add(cm.add_dependencies(project_name, internal_library));
             }
         }
     }
