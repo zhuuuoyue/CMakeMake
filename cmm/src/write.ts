@@ -117,6 +117,15 @@ export class ProjectWriter extends CMakeWriter {
             doc.add(cm.include_directories(include_directory));
         }
 
+        for (let link_dir of this.data.link_directories) {
+            let link_dir_path = join(this.data.project_path.toLocaleString(), link_dir);
+            doc.add(cm.link_directories(link_dir_path));
+        }
+
+        for (let link_lib of this.data.link_libraries) {
+            doc.add(cm.link_libraries(link_lib));
+        }
+
         if (this.data.internal_libraries.length > 0) {
             let output_directory = join(
                 solution_config.solution_path.toLocaleString(),

@@ -41,7 +41,7 @@ class ProjectParser {
     public cxx_standard_key: string = 'cxx_standard';
     public include_directories_key: string = 'include_directories';
     public link_directories_key: string = 'link_directories';
-    public link_libraries_key: string = 'link_directories';
+    public link_libraries_key: string = 'link_libraries';
 
     public internal_includes_key: string = 'internal_includes';
     public internal_libraries_key: string = 'internal_libraries';
