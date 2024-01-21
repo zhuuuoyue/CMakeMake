@@ -7,7 +7,8 @@
     "build": "tsc",
     "build:dev": "tsc --watch",
     "start": "node build/main.js",
-    "dist": "tsc -p tsconfig.dist.json"
+    "dist": "tsc -p tsconfig.dist.json",
+    "package": "node scripts/packaging.js"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +17,7 @@
     "@types/command-line-args": "^5.2.3",
     "@types/lodash": "^4.14.202",
     "@types/node": "^20.10.6",
+    "archiver": "^6.0.1",
     "typescript": "^5.3.3"
   },
   "dependencies": {

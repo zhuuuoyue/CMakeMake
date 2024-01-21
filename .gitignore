@@ -129,9 +129,11 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+archives/
 cmm/.vscode
 cmm/build
 cmm/dist
+cmm/package.temp.json
 examples/**/bin
 examples/**/sln
 examples/**/CMakeLists.txt
