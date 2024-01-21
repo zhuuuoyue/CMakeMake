@@ -1,6 +1,4 @@
 @echo off
 cd cmm
-npm run dist
-pause
-npm run package
-pause
+call npm run dist
+call npm run package
