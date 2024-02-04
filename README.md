@@ -46,3 +46,29 @@ git clone git@github.com:zhuuuoyue/CMakeMake.git
 cd CMakeMake/cmm
 npm install
 ```
+
+## Debug
+
+- Select 'Open with Code' on context menu in `cmm` directory.
+- Creat configuration file `launch.json` in `.vscode` directory.
+- Edit `program` field.
+- Add `args` field to specify command line arguments.
+- Press F5 to start debugging.
+
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Program",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}\\build\\main.js",
+            "args": ["--solution_dir", "path-to-solution-directory"]
+        }
+    ]
+}
+```
