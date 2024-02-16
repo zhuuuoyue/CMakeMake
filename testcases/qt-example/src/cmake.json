@@ -1,0 +1,5 @@
+{
+  "name": "QtExample",
+  "output_directory": "../bin",
+  "startup_project": "App"
+}

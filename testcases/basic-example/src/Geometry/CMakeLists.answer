@@ -1,0 +1,32 @@
+cmake_minimum_required(VERSION 3.5)
+project("Geometry" LANGUAGES CXX)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+include_directories(D:/repos/CMakeMake/testcases/basic-example/src/Geometry)
+include_directories(D:/repos/CMakeMake/testcases/basic-example/src/Geometry/Shape)
+include_directories(D:/repos/CMakeMake/testcases/basic-example/src/Geometry/Algo)
+set(PROJECT_SOURCES
+cmake.json
+GeometryExport.hpp
+Vector.cpp
+Vector.hpp
+Shape/Circle.cpp
+Shape/Circle.hpp
+Shape/Rectangle.cpp
+Shape/Rectangle.hpp
+Algo/Area.cpp
+Algo/Area.hpp
+)
+add_library("Geometry" SHARED ${PROJECT_SOURCES})
+source_group("" FILES cmake.json)
+source_group("" FILES GeometryExport.hpp)
+source_group("" FILES Vector.cpp)
+source_group("" FILES Vector.hpp)
+source_group("Shape" FILES Shape/Circle.cpp)
+source_group("Shape" FILES Shape/Circle.hpp)
+source_group("Shape" FILES Shape/Rectangle.cpp)
+source_group("Shape" FILES Shape/Rectangle.hpp)
+source_group("Algo" FILES Algo/Area.cpp)
+source_group("Algo" FILES Algo/Area.hpp)
+target_compile_definitions("Geometry" PRIVATE GEOMETRY_LIBRARY)

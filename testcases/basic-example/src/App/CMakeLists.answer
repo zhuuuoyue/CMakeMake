@@ -1,0 +1,18 @@
+cmake_minimum_required(VERSION 3.5)
+project("App" LANGUAGES CXX)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+link_libraries("Geometry.lib")
+include_directories(D:/repos/CMakeMake/testcases/basic-example/src/App)
+include_directories(D:/repos/CMakeMake/testcases/basic-example/src/Geometry)
+include_directories(D:/repos/CMakeMake/testcases/basic-example/src/App/Shape)
+include_directories(D:/repos/CMakeMake/testcases/basic-example/src/App/Algo)
+link_directories(D:/repos/CMakeMake/testcases/basic-example/bin)
+set(PROJECT_SOURCES
+cmake.json
+main.cpp
+)
+add_executable("App" ${PROJECT_SOURCES})
+source_group("" FILES cmake.json)
+source_group("" FILES main.cpp)

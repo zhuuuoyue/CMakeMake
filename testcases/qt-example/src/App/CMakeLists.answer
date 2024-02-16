@@ -1,0 +1,26 @@
+cmake_minimum_required(VERSION 3.5)
+project("App" LANGUAGES CXX)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+include_directories(D:/repos/CMakeMake/testcases/qt-example/src/App)
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
+set(PROJECT_SOURCES
+cmake.json
+Editor.cpp
+Editor.hpp
+Editor.ui
+main.cpp
+)
+add_executable("App" ${PROJECT_SOURCES})
+source_group("" FILES cmake.json)
+source_group("" FILES Editor.cpp)
+source_group("" FILES Editor.hpp)
+source_group("" FILES Editor.ui)
+source_group("" FILES main.cpp)
+target_link_libraries("App" PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)

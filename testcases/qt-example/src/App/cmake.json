@@ -1,0 +1,8 @@
+{
+  "name": "App",
+  "type": "desktop-application",
+  "include_current_directory": true,
+  "qt": {
+    "packages": ["Widgets"]
+  }
+}
