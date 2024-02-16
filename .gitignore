@@ -130,9 +130,11 @@ dist
 .pnp.*
 
 archives/
+test-output/
 cmm/.vscode
 cmm/build
 cmm/dist
+cmm/scripts-build
 cmm/package.temp.json
 examples/**/bin
 examples/**/sln

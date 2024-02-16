@@ -6,9 +6,11 @@
   "scripts": {
     "build": "tsc",
     "build:dev": "tsc --watch",
+    "build:dist": "tsc -p tsconfig.dist.json",
+    "build:scripts": "tsc -p tsconfig.scripts.json",
     "start": "node build/main.js",
-    "dist": "tsc -p tsconfig.dist.json",
-    "package": "node scripts/packaging.js"
+    "package": "node scripts/packaging.js",
+    "test": "node scripts-build/test-main.js"
   },
   "keywords": [],
   "author": "",
