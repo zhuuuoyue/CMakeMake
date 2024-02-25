@@ -25,7 +25,7 @@ class _TestCaseRunner implements TestCaseRunner {
         cpSync(test_case_source_dir, test_case_destination_dir, { recursive: true });
 
         const src_dir = join(test_case_destination_dir, 'src');
-        const command = `node dist/main.js --solution_dir ${src_dir.replace(new RegExp('\\\\', 'g'), '/')}`;
+        const command = `node build/main.js --solution_dir ${src_dir.replace(new RegExp('\\\\', 'g'), '/')}`;
         const console_out = execSync(command).toString();
         if (console_out.length != 0) {
             return;

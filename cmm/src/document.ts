@@ -22,7 +22,7 @@ export class Document {
 
     public save(project_directory: PathLike) {
         let filename = join(project_directory.toLocaleString(), cmake_lists_filename);
-        let text = this.lines.join('\n');
+        let text = this.lines.join('\r\n');
         writeFileSync(filename.toLocaleString(), text, { flag: 'w' });
     }
 }
