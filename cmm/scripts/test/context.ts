@@ -13,7 +13,7 @@ export class Context {
     constructor(repos_path: PathLike) {
         this._repository_path = repos_path;
         this._project_path = path.join(this._repository_path.toLocaleString(), 'cmm');
-        this._test_case_directory_path = path.join(this._repository_path.toLocaleString(), 'testcases');
+        this._test_case_directory_path = path.join(this._repository_path.toLocaleString(), 'test');
         this._test_output_directory_path = path.join(this._repository_path.toLocaleString(), 'test-output');
         const now = new Date();
         this._test_running_name = now.toISOString()
