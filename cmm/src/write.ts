@@ -1,5 +1,5 @@
 import { PathLike } from 'fs';
-import { dirname, extname, isAbsolute, join } from 'path';
+import { dirname, extname, isAbsolute, join, relative } from 'path';
 
 import _ from 'lodash';
 
@@ -114,12 +114,18 @@ export class ProjectWriter extends CMakeWriter {
         }
 
         for (let include_directory of include_directories) {
-            doc.add(cm.include_directories(include_directory));
+            let include_directory_rel_path = relative(this.data.project_path.toLocaleString(), include_directory.toLocaleString());
+            if (include_directory_rel_path.length != 0) {
+                doc.add(cm.include_directories(include_directory_rel_path));
+            }
         }
 
         for (let link_dir of this.data.link_directories) {
             let link_dir_path = join(this.data.project_path.toLocaleString(), link_dir);
-            doc.add(cm.link_directories(link_dir_path));
+            let link_dir_rel_path = relative(this.data.project_path.toLocaleString(), link_dir_path);
+            if (link_dir_rel_path.length != 0) {
+                doc.add(cm.link_directories(link_dir_rel_path));
+            }
         }
 
         for (let link_lib of this.data.link_libraries) {
@@ -131,7 +137,10 @@ export class ProjectWriter extends CMakeWriter {
                 solution_config.solution_path.toLocaleString(),
                 solution_config.output_directory.toLocaleString()
             );
-            doc.add(cm.link_directories(output_directory));
+            let output_directory_rel_path = relative(this.data.project_path.toLocaleString(), output_directory);
+            if (output_directory_rel_path.length != 0) {
+                doc.add(cm.link_directories(output_directory_rel_path));
+            }
         }
 
         if (!_.isUndefined(qt_config)) {

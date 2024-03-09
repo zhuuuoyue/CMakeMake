@@ -4,11 +4,10 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 link_libraries("Geometry.lib")
-include_directories(D:/repos/CMakeMake/testcases/basic-example/src/App)
-include_directories(D:/repos/CMakeMake/testcases/basic-example/src/Geometry)
-include_directories(D:/repos/CMakeMake/testcases/basic-example/src/App/Shape)
-include_directories(D:/repos/CMakeMake/testcases/basic-example/src/App/Algo)
-link_directories(D:/repos/CMakeMake/testcases/basic-example/bin)
+include_directories(../Geometry)
+include_directories(Shape)
+include_directories(Algo)
+link_directories(../../bin)
 set(PROJECT_SOURCES
 cmake.json
 main.cpp

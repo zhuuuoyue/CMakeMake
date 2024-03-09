@@ -3,9 +3,8 @@ project("Geometry" LANGUAGES CXX)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-include_directories(D:/repos/CMakeMake/testcases/basic-example/src/Geometry)
-include_directories(D:/repos/CMakeMake/testcases/basic-example/src/Geometry/Shape)
-include_directories(D:/repos/CMakeMake/testcases/basic-example/src/Geometry/Algo)
+include_directories(Shape)
+include_directories(Algo)
 set(PROJECT_SOURCES
 cmake.json
 GeometryExport.hpp
