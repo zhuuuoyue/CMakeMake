@@ -9,7 +9,7 @@
     "build:dist": "tsc -p tsconfig.dist.json",
     "build:scripts": "tsc -p tsconfig.scripts.json",
     "start": "node build/main.js",
-    "package": "node scripts/packaging.js",
+    "package": "node scripts-build/packaging.js",
     "test": "node scripts-build/test-main.js"
   },
   "keywords": [],
