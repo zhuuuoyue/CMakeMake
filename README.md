@@ -72,3 +72,21 @@ npm install
     ]
 }
 ```
+
+## Test
+
+Double click batch file `run_test.bat` to start testing. The test result will be in folder `test-output`. All test results in folder `test-output` are named using date and time.
+
+![All test results](./images/all-test-results.png)
+
+All testcase results are list in your test running folder as below.
+
+![All testcase results](./images/all-testcase-results.png)
+
+The HTML file `result.html` gives the difference list.
+
+![Test result](./images/test-result.png)
+
+## Create Archive
+
+Double click batch file `create_archive.bat` and create archive automatically. The created archive (*.zip) will be in folder `archives`.
