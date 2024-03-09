@@ -45,6 +45,7 @@ export class ProjectConfig {
     public include_directories: string[] = [];
     public link_directories: string[] = [];
     public link_libraries: string[] = [];
+    public disable_specific_warnings: string[] = [];
 
     public internal_includes: string[] = [];
     public internal_libraries: string[] = [];

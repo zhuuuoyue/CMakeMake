@@ -1,0 +1,5 @@
+{
+  "name": "DisableSpecificWarnings",
+  "output_directory": "../bin",
+  "startup_project": "App"
+}

@@ -42,6 +42,7 @@ class ProjectParser {
     public include_directories_key: string = 'include_directories';
     public link_directories_key: string = 'link_directories';
     public link_libraries_key: string = 'link_libraries';
+    public disable_specific_warnings_key: string = 'disable_specific_warnings';
 
     public internal_includes_key: string = 'internal_includes';
     public internal_libraries_key: string = 'internal_libraries';
@@ -121,6 +122,9 @@ class ProjectParser {
             return;
         }
         if (!this.parse_link_libraries(data, project_config)) {
+            return;
+        }
+        if (!this.parse_disable_specific_warnings(data, project_config)) {
             return;
         }
         if (!this.parse_internal_includes(data, project_config)) {
@@ -267,6 +271,15 @@ class ProjectParser {
         if (_.has(data, this.link_libraries_key)) {
             if (is_array_of_string(data[this.link_libraries_key])) {
                 project_config.link_libraries = data[this.link_libraries_key];
+            }
+        }
+        return true;
+    }
+
+    private parse_disable_specific_warnings(data: any, project_config: ProjectConfig): boolean {
+        if (_.has(data, this.disable_specific_warnings_key)) {
+            if (is_array_of_string(data[this.disable_specific_warnings_key])) {
+                project_config.disable_specific_warnings = data[this.disable_specific_warnings_key];
             }
         }
         return true;

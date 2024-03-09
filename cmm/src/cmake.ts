@@ -143,6 +143,12 @@ export function set_variable_multi_paths(var_name: string, paths: PathLike[]): s
     return lines;
 }
 
+// set
+
+export function set_cmake_cxx_flags(flags: string[]): string {
+    return `set(CMAKE_CXX_FLAGS "\${CMAKE_CXX_FLAGS} ${flags.join(' ')}")`;
+}
+
 // set property
 
 export function startup_project(project_name: string): string {

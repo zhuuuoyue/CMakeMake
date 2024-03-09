@@ -1,0 +1,7 @@
+{
+  "name": "App",
+  "type": "console-application",
+  "include_current_directory": true,
+  "cxx_standard": 11,
+  "disable_specific_warnings": ["4244"]
+}

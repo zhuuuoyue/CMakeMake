@@ -76,6 +76,14 @@ export class ProjectWriter extends CMakeWriter {
         doc.add(cm.cmake_cxx_standard(this.data.cxx_standard));
         doc.add(cm.cmake_cxx_standard_required(this.data.cxx_standard_required));
 
+        if (this.data.disable_specific_warnings.length > 0) {
+            let warnings: string[] = [];
+            for (let warning of this.data.disable_specific_warnings) {
+                warnings.push(`/wd${warning}`);
+            }
+            doc.add(cm.set_cmake_cxx_flags(warnings));
+        }
+
         // collect including paths
         let include_directories = new Set<PathLike>();
         let project_full_path_str = this.data.project_path.toLocaleString();
