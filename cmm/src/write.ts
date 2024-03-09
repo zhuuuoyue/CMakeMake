@@ -3,7 +3,7 @@ import { dirname, extname, isAbsolute, join, relative } from 'path';
 
 import _ from 'lodash';
 
-import { CxxStandard, ProjectConfig, ProjectType, SolutionConfig } from './concepts';
+import { ProjectConfig, ProjectType, SolutionConfig } from './concepts';
 import { Context } from './context';
 import { Document } from './document';
 import * as cm from './cmake';

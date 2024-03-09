@@ -1,6 +1,5 @@
 import { cwd } from 'process';
 import { isAbsolute, join } from 'path';
-import { readFileSync, readdirSync, statSync } from 'fs';
 
 import _ from 'lodash';
 import { OptionDefinition, ParseOptions } from 'command-line-args';
